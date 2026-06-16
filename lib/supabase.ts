@@ -1,7 +1,7 @@
-import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'not found';
-console.log(supabaseUrl)
-const supabasePublishableKey = process.env.EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY || 'not found';
+import { createClient } from '@supabase/supabase-js'
 
-export const supabase = createClient(supabaseUrl, supabasePublishableKey);
+const supabaseUrl = process.env.SUPABASE_URL || 'not found';
+const supabaseSecretKey = process.env.SUPABASE_SECRET_KEY || 'not found';
+
+export const supabase = createClient(supabaseUrl, supabaseSecretKey);

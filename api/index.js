@@ -1,8 +1,9 @@
-import express from 'express'
-import morgan from 'morgan'
-import cors from 'cors'
+import 'dotenv/config';
 import bcrypt from 'bcryptjs'
-import { supabase } from '../lib/supabase.ts'
+import cors from 'cors'
+import express from 'express'
+import jwt from 'jsonwebtoken'
+import { supabase } from '../lib/supabase.js'
 
 //Create express application
 const app = express();
@@ -41,22 +42,23 @@ app.get('/', (req, res) => {
  * If not valid, returns specific error message
  */
 app.post('/api/login', async (req, res) => {
-    const { email, password_hash } = req.params
+    const { email, password_hash } = req.body
     try{
         const { data, error } = await supabase.from('users').select('*').eq('email', email);
         if (error) {
             console.error("Error fetching user:", error.message);
-            return;
+            res.status(400)
         }
         const user = data[0]
+        console.log('found user:', user)
         const match = await bcrypt.compare(password_hash, user.password_hash)
         if(!match){
-            return {error: true, msg: 'Incorrect password'}
+            res.status(400).json({error: true, msg: 'Incorrect password'})
         } 
         const token = await createLoginToken(user.id, user.email)
-        res.json({token: token}, 200)
+        res.status(200).json({token: token})
     } catch {
-        return {error: true, msg: 'Error with login endpoint'}
+        res.status(400).json({error: true, msg: 'Error with login endpoint'});
     }    
     //res.json({message: 'reached login endpoint', email: email, password: password}, 200)
 });
@@ -65,16 +67,16 @@ app.post('/api/login', async (req, res) => {
  * API Registration Endpoint
  */
 app.post('/api/register', async (req, res) => {
-    const { name, email, password_hash } = req.params;
+    const { name, email, password_hash } = req.body;
     try {
         const { data, error } = await supabase.from('users').select('*').eq('email', email);
         if (error) {
             console.error("Error fetching user:", error.message);
             return;
         }
-        res.json({recieved: data}, 200);
+        res.status(200).json({recieved: data});
     } catch {
-        res.json({message: 'Error with registration endpoint'}, 401);
+        res.status(401).json({message: 'Error with registration endpoint'});
     }
 });
 
